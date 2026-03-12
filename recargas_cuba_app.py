@@ -514,10 +514,46 @@ BASE_HTML = """
     }
 
     @media (max-width: 980px) {
-      .hero-grid, .grid-3, .stats { grid-template-columns: 1fr; }
-      .nav-inner { align-items: flex-start; }
-      .nav-links { justify-content: flex-start; }
+  .hero-grid,
+  .grid-3,
+  .stats {
+    grid-template-columns: 1fr;
     }
+
+  .nav-inner {
+    flex-direction: column;
+    align-items: stretch;
+    }
+
+  .brand {
+    text-align: center;
+    }
+
+  .nav-links {
+    justify-content: center;
+    width: 100%;
+    }
+
+  .hero {
+    padding: 34px 0 24px;
+    }
+
+  h1 {
+    font-size: clamp(2rem, 10vw, 3.2rem);
+    }
+
+  .hero-actions {
+    flex-direction: column;
+    }
+
+  .hero-actions .btn {
+    width: 100%;
+    }
+
+  .price-card {
+    padding: 20px;
+    }
+  }
 
     @media (max-width: 740px) {
       table, thead, tbody, th, td, tr { display: block; }
@@ -575,13 +611,17 @@ BASE_HTML = """
 
 
 def render_page(content, title="Recargas a Cuba", user=None, hide_container=False, **context):
+    rendered_content = render_template_string(
+        content,
+        user=user,
+        **context,
+    )
     return render_template_string(
         BASE_HTML,
-        content=content,
+        content=rendered_content,
         title=title,
         user=user,
         hide_container=hide_container,
-        **context,
     )
 
 
@@ -601,6 +641,7 @@ def home():
             Tus clientes pueden registrarse, entrar a su cuenta y revisar el historial de pedidos.
             También puedes mostrar varios servicios como recargas, compra de USDT, envíos de paquetes y más.
           </p>
+
           <div class="hero-actions">
             {% if user %}
               {% if user['is_admin'] %}
@@ -619,6 +660,7 @@ def home():
           <div class="price-kicker">PROMOCIÓN DEL {{ promo_start }} AL {{ promo_end }}</div>
           <div class="price">{{ precio }}</div>
           <div class="muted">Recarga promocional disponible para clientes en Cuba durante las fechas activas.</div>
+
           <div class="promo-box">
             <strong>Bonificación actual</strong>
             <ul>
@@ -636,9 +678,10 @@ def home():
         <div class="top-row">
           <div>
             <h2>Nuestros servicios</h2>
-            <p class="muted">Puedes usar estas tarjetas como menú principal de servicios y luego convertir cada una en su propia página.</p>
+            <p class="muted">Puedes usar estas tarjetas como menú principal de servicios.</p>
           </div>
         </div>
+
         <div class="grid-3">
           <div class="card feature">
             <h3>Recargas</h3>
@@ -646,23 +689,11 @@ def home():
           </div>
           <div class="card feature">
             <h3>Compra de USDT</h3>
-            <p>Servicio ideal para mostrar compra y venta de USDT dentro de la misma plataforma.</p>
+            <p>Espacio para publicar compra y venta de USDT.</p>
           </div>
           <div class="card feature">
             <h3>Envíos de paquetes</h3>
-            <p>Espacio para publicar entregas, paquetes, paquetería o encargos a Cuba.</p>
-          </div>
-          <div class="card feature">
-            <h3>Pagos y giros</h3>
-            <p>Puedes añadir pagos, transferencias o cobros como otro servicio del menú.</p>
-          </div>
-          <div class="card feature">
-            <h3>Cambio de divisas</h3>
-            <p>Perfecto para mostrar servicios futuros relacionados con CUP, USD y USDT.</p>
-          </div>
-          <div class="card feature">
-            <h3>Más servicios</h3>
-            <p>Luego puedes agregar lo que quieras sin cambiar todo el diseño del sitio.</p>
+            <p>Servicio para paquetería, encargos y entregas a Cuba.</p>
           </div>
         </div>
       </div>
@@ -1133,4 +1164,5 @@ def forbidden(_error):
 
 
 if __name__ == "__main__":
+
     app.run(debug=True)
