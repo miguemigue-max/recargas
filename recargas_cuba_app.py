@@ -124,20 +124,17 @@ BASE_HTML = """
   <title>{{ title }}</title>
   <style>
     :root {
-      --bg: #f8fafc;
-      --bg-2: #eef2ff;
-      --card: rgba(255,255,255,0.92);
-      --card-strong: rgba(255,255,255,0.12);
-      --text: #0f172a;
-      --muted: #475569;
-      --accent: #2563eb;
-      --accent-2: #0ea5e9;
-      --border: rgba(15,23,42,0.10);
-      --shadow: 0 18px 40px rgba(15,23,42,0.10);
-      --danger: #dc2626;
-      --warning: #f59e0b;
-      --success: #22c55e;
-    }
+  --bg: #f5f7fb;
+  --bg-2: #eef2f7;
+  --card: rgba(255,255,255,0.96);
+  --text: #111827;
+  --muted: #6b7280;
+  --accent: #111827;
+  --accent-2: #374151;
+  --border: rgba(17,24,39,0.08);
+  --shadow: 0 16px 35px rgba(17,24,39,0.08);
+  --danger: #b91c1c;
+}
 
     * { box-sizing: border-box; }
     body {
@@ -145,11 +142,9 @@ BASE_HTML = """
       font-family: Arial, Helvetica, sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top right, rgba(37,99,235,0.10), transparent 22%),
-        radial-gradient(circle at top left, rgba(14,165,233,0.10), transparent 20%),
-        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
-      min-height: 100vh;
-    }
+  radial-gradient(circle at top right, rgba(17,24,39,0.04), transparent 22%),
+  radial-gradient(circle at top left, rgba(107,114,128,0.05), transparent 20%),
+  linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 100%);
 
     a { color: inherit; text-decoration: none; }
     .container { width: min(1120px, 92%); margin: 0 auto; }
@@ -198,10 +193,10 @@ BASE_HTML = """
 
     .btn:hover { transform: translateY(-1px); }
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #16a34a);
-      color: var(--text);
-      box-shadow: var(--shadow);
-    }
+  background: linear-gradient(135deg, #111827, #374151);
+  color: white;
+  box-shadow: var(--shadow);
+}
     .btn-secondary {
       background: rgba(255,255,255,0.88);
       border-color: var(--border);
@@ -225,16 +220,16 @@ BASE_HTML = """
     }
 
     .badge {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(37,99,235,0.10);
-      border: 1px solid rgba(37,99,235,0.18);
-      color: #1d4ed8;
-      font-size: 0.88rem;
-      margin-bottom: 16px;
-      font-weight: 700;
-    }
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(17,24,39,0.06);
+  border: 1px solid rgba(17,24,39,0.10);
+  color: #111827;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
 
     h1 {
       margin: 0 0 12px;
@@ -287,12 +282,12 @@ BASE_HTML = """
     }
 
     .promo-box {
-      margin-top: 16px;
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(37,99,235,0.06);
-      border: 1px solid rgba(37,99,235,0.15);
-    }
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(17,24,39,0.03);
+  border: 1px solid rgba(17,24,39,0.08);
+}
 
     .promo-box ul {
       margin: 10px 0 0 18px;
@@ -593,14 +588,11 @@ BASE_HTML = """
       <div class="brand"><a href="{{ url_for('home') }}">Recargas a Cuba</a></div>
       <div class="nav-links">
         {% if user %}
-          {% if user['is_admin'] %}
-            <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">Dashboard admin</a>
-          {% else %}
-            <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">Mi cuenta</a>
-            <a class="btn btn-secondary" href="{{ url_for('new_order') }}">Nuevo pedido</a>
-          {% endif %}
-          <a class="btn btn-danger" href="{{ url_for('logout') }}">Salir</a>
-        {% else %}
+         {% if user['is_admin'] %}
+          <a class="btn btn-secondary" href="{{ url_for('admin_dashboard') }}">Dashboard admin</a>
+           {% endif %}
+            <a class="btn btn-danger" href="{{ url_for('logout') }}">Salir</a>
+           {% else %}
           <a class="btn btn-secondary" href="{{ url_for('login') }}">Entrar</a>
           <a class="btn btn-primary" href="{{ url_for('register') }}">Crear cuenta</a>
         {% endif %}
@@ -649,34 +641,47 @@ def home():
     user = current_user()
     content = """
     <header class="hero">
-      <div class="container hero-grid">
-        <div>
-          <div class="badge">Servicios disponibles en la plataforma</div>
-          <h1>Recargas a Cuba y más servicios en un solo lugar.</h1>
-          <p class="subtitle">
-            Tus clientes pueden registrarse, entrar a su cuenta y revisar el historial de pedidos.
-            También puedes mostrar varios servicios como recargas, compra de USDT, envíos de paquetes y más.
+      <div class="container">
+        <div class="hero-center">
+          <div class="badge">Servicios disponibles</div>
+          <h1>Tu punto de acceso para servicios hacia Cuba.</h1>
+          <p class="subtitle centered">
+            Recargas, compra de USDT, remesas, envíos y más, todo desde una sola plataforma.
           </p>
+        </div>
 
-          <div class="hero-actions">
-            {% if user %}
-              {% if user['is_admin'] %}
-                <a class="btn btn-primary" href="{{ url_for('admin_dashboard') }}">Ir al dashboard admin</a>
-              {% else %}
-                <a class="btn btn-primary" href="{{ url_for('new_order') }}">Hacer pedido</a>
-              {% endif %}
-            {% else %}
-              <a class="btn btn-primary" href="{{ url_for('register') }}">Crear cuenta</a>
-              <a class="btn btn-secondary" href="{{ url_for('login') }}">Iniciar sesión</a>
-            {% endif %}
+        <div class="services-grid">
+          <a class="service-card" href="{{ url_for('new_order') }}">
+            <div class="service-icon">📱</div>
+            <h3>Recargas</h3>
+            <p>Haz pedidos de recarga y consulta promociones activas.</p>
+          </a>
+
+          <div class="service-card">
+            <div class="service-icon">💸</div>
+            <h3>Compra de USDT</h3>
+            <p>Espacio para publicar compra y venta de USDT.</p>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">💵</div>
+            <h3>Remesas</h3>
+            <p>Servicio para envíos de dinero y cobros.</p>
+          </div>
+
+          <div class="service-card">
+            <div class="service-icon">📦</div>
+            <h3>Paquetería</h3>
+            <p>Encargos, paquetes y entregas a Cuba.</p>
           </div>
         </div>
 
-        <div class="card price-card">
-          <div class="price-kicker">PROMOCIÓN DEL {{ promo_start }} AL {{ promo_end }}</div>
-          <div class="price">{{ precio }}</div>
-          <div class="muted">Recarga promocional disponible para clientes en Cuba durante las fechas activas.</div>
-
+        <div class="promo-home card">
+          <div class="promo-left">
+            <div class="price-kicker">PROMOCIÓN DEL {{ promo_start }} AL {{ promo_end }}</div>
+            <div class="price">{{ precio }}</div>
+            <p class="muted">Recarga promocional disponible durante las fechas activas.</p>
+          </div>
           <div class="promo-box">
             <strong>Bonificación actual</strong>
             <ul>
@@ -688,32 +693,6 @@ def home():
         </div>
       </div>
     </header>
-
-    <section class="section">
-      <div class="container">
-        <div class="top-row">
-          <div>
-            <h2>Nuestros servicios</h2>
-            <p class="muted">Puedes usar estas tarjetas como menú principal de servicios.</p>
-          </div>
-        </div>
-
-        <div class="grid-3">
-          <div class="card feature">
-            <h3>Recargas</h3>
-            <p>Recargas promocionales y pedidos organizados desde la cuenta del usuario.</p>
-          </div>
-          <div class="card feature">
-            <h3>Compra de USDT</h3>
-            <p>Espacio para publicar compra y venta de USDT.</p>
-          </div>
-          <div class="card feature">
-            <h3>Envíos de paquetes</h3>
-            <p>Servicio para paquetería, encargos y entregas a Cuba.</p>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <footer class="footer">
       <div class="container">Plataforma de servicios · {{ year }}</div>
@@ -728,7 +707,6 @@ def home():
         precio=PRECIO_RECARGA,
         year=datetime.now().year,
     )
-
 
 # -----------------------------
 # Registro / login / logout
@@ -800,8 +778,8 @@ def login():
     if current_user():
         user = current_user()
         if user["is_admin"]:
-            return redirect(url_for("admin_dashboard"))
-        return redirect(url_for("dashboard"))
+    return redirect(url_for("admin_dashboard"))
+return redirect(url_for("home"))
 
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
@@ -1175,4 +1153,5 @@ def forbidden(_error):
 if __name__ == "__main__":
 
     app.run(debug=True)
+
 
