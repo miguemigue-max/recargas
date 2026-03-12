@@ -338,7 +338,8 @@ BASE_HTML = """
     }
 
     .auth-card {
-      width: min(520px, 92vw);
+  width: min(460px, 92vw);
+  padding: 28px;
     }
 
     form {
@@ -355,14 +356,14 @@ BASE_HTML = """
     }
 
     input, textarea, select {
-      width: 100%;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.88);
-      color: var(--text);
-      padding: 14px 15px;
-      font-size: 0.98rem;
-      outline: none;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.95);
+  color: var(--text);
+  padding: 14px 15px;
+  font-size: 1rem;
+  outline: none;
     }
 
     textarea {
@@ -555,20 +556,35 @@ BASE_HTML = """
     }
   }
 
-    @media (max-width: 740px) {
-      table, thead, tbody, th, td, tr { display: block; }
-      thead { display: none; }
-      tr { border-bottom: 1px solid rgba(255,255,255,0.10); padding: 10px 0; }
-      td { border-bottom: none; padding: 8px 14px; }
-      td::before {
-        content: attr(data-label);
-        display: block;
-        font-size: 0.82rem;
-        color: #e2e8f0;
-        font-weight: 800;
-        margin-bottom: 4px;
-      }
-    }
+    @media (max-width: 640px) {
+  .auth-shell {
+    padding: 24px 0 40px;
+    min-height: auto;
+  }
+
+  .auth-card {
+    width: min(94vw, 100%);
+    padding: 22px;
+    border-radius: 20px;
+  }
+
+  .auth-card h2 {
+    font-size: 2.2rem;
+    line-height: 1.05;
+  }
+
+  .auth-card .btn {
+    width: 100%;
+  }
+
+  .auth-card form {
+    gap: 12px;
+  }
+
+  .auth-card input {
+    padding: 13px 14px;
+  }
+}
   </style>
 </head>
 <body>
@@ -808,32 +824,25 @@ def login():
             return redirect(url_for("dashboard"))
 
     content = """
-    <div class="auth-shell">
-      <div class="card auth-card">
-        <h2>Iniciar sesión</h2>
-        <p class="muted">Entra a tu cuenta para revisar o crear pedidos.</p>
-        <form method="post">
-          <div>
-            <label>Correo electrónico</label>
-            <input type="email" name="email" required>
-          </div>
-          <div>
-            <label>Contraseña</label>
-            <input type="password" name="password" required>
-          </div>
-          <button class="btn btn-primary" type="submit">Entrar</button>
-        </form>
-        <p class="muted">¿No tienes cuenta? <a href="{{ url_for('register') }}"><strong>Créala aquí</strong></a></p>
-        <div class="promo-box" style="margin-top:16px;">
-          <strong>Acceso inicial del admin</strong>
-          <ul>
-            <li>Correo: admin@recargas.local</li>
-            <li>Contraseña: admin123</li>
-          </ul>
-        </div>
+<div class="auth-shell">
+  <div class="card auth-card">
+    <h2>Iniciar sesión</h2>
+    <p class="muted">Entra a tu cuenta para revisar o crear pedidos.</p>
+    <form method="post">
+      <div>
+        <label>Correo electrónico</label>
+        <input type="email" name="email" required>
       </div>
-    </div>
-    """
+      <div>
+        <label>Contraseña</label>
+        <input type="password" name="password" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Entrar</button>
+    </form>
+    <p class="muted">¿No tienes cuenta? <a href="{{ url_for('register') }}"><strong>Créala aquí</strong></a></p>
+  </div>
+</div>
+"""
     return render_page(content, title="Iniciar sesión", user=None, hide_container=True)
 
 
@@ -1166,3 +1175,4 @@ def forbidden(_error):
 if __name__ == "__main__":
 
     app.run(debug=True)
+
