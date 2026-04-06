@@ -4135,6 +4135,7 @@ def privacy():
     """
 
 @app.route("/register/<int:step>", methods=["GET", "POST"])
+print("FACE CHECK pending_registration:", session.get("pending_registration"))
 def register_step(step):
     if current_user():
         return redirect(url_for("home"))
@@ -4340,7 +4341,7 @@ def register_step(step):
                 "accepted_terms": True,
                 "accepted_terms_at": now_str(),
             }
-
+print("STEP9 pending_registration guardado:", session.get("pending_registration"))
             return redirect(url_for("register_face_check"))
 
     question = steps_info[step]["question"]
