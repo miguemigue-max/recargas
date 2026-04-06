@@ -9520,6 +9520,10 @@ def server_error(e):
         user=current_user()
     ), 500
 
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
 
 if __name__ == "__main__":
     ensure_database()
