@@ -47,6 +47,9 @@ MP_ACCESS_TOKEN = "APP_USR-8074205016126998-033001-61a4b8bdd97b885b5da2cec14e9fd
 RECHARGE_UPLOAD_DIR = BASE_DIR / "static" / "recharges"
 RECHARGE_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 DING_API_KEY = "4rOYPYAWRm56MNODx50HQx"
+DISABLE_EMAIL = True
+if not DISABLE_EMAIL:
+    send_email(...)
 
 CITIES_CUBA = [
     "Pinar del Río", "Artemisa", "La Habana", "Mayabeque", "Matanzas",
