@@ -13,22 +13,10 @@ def home():
 
 @app.route("/products/cuba")
 def products_cuba():
-    url = "https://api.dingconnect.com/api/V1/GetProducts"
-    headers = {"api_key": DING_API_KEY}
-
-    try:
-        response = requests.get(url, headers=headers, timeout=30)
-
-        return jsonify({
-            "ok": True,
-            "status_code": response.status_code,
-            "api_key_loaded": bool(DING_API_KEY),
-            "api_key_prefix": (DING_API_KEY[:6] + "...") if DING_API_KEY else None,
-            "raw_text": response.text[:3000]
-        })
-
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+    return {
+        "api_key_loaded": bool(DING_API_KEY),
+        "api_key_prefix": (DING_API_KEY[:6] + "...") if DING_API_KEY else None
+    }
         
 @app.route("/send-topup", methods=["POST"])
 def send_topup():
