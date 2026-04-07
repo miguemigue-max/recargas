@@ -20,28 +20,27 @@ def products_cuba():
         response = requests.get(url, headers=headers, timeout=30)
         data = response.json()
 
-        products = []
-        for item in data.get("Items", []):
-            if item.get("RegionCode") == "CU":
-                products.append({
-                    "sku": item.get("SkuCode"),
-                    "provider": item.get("ProviderCode"),
-                    "receive_value": item.get("ReceiveValue"),
-                    "receive_currency": item.get("ReceiveCurrencyIso"),
-                    "send_value": item.get("SendValue"),
-                    "send_currency": item.get("SendCurrencyIso"),
-                    "text": item.get("DefaultDisplayText"),
-                })
+        sample = []
+        for item in data.get("Items", [])[:30]:
+            sample.append({
+                "sku": item.get("SkuCode"),
+                "provider": item.get("ProviderCode"),
+                "region": item.get("RegionCode"),
+                "text": item.get("DefaultDisplayText"),
+                "receive_value": item.get("ReceiveValue"),
+                "receive_currency": item.get("ReceiveCurrencyIso"),
+                "send_value": item.get("SendValue"),
+                "send_currency": item.get("SendCurrencyIso"),
+            })
 
         return jsonify({
             "ok": True,
-            "count": len(products),
-            "items": products
+            "total_items": len(data.get("Items", [])),
+            "sample": sample
         })
 
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
-
 
 @app.route("/send-topup", methods=["POST"])
 def send_topup():
