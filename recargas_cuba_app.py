@@ -4342,7 +4342,7 @@ def register_step(step):
                 "accepted_terms_at": now_str(),
             }
             print("STEP9 pending_registration guardado:", session.get("pending_registration"))
-            return redirect(url_for("register_face_check"))
+            return redirect(url_for("home"))
 
     question = steps_info[step]["question"]
     helper = steps_info[step]["helper"]
