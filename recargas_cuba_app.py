@@ -4993,13 +4993,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.error("No se pudo generar fingerprint", e);
   }
 
-  function captureFrame(targetInput) {
-    const ctx = canvasEl.getContext("2d");
-    canvasEl.width = videoEl.videoWidth || 480;
-    canvasEl.height = videoEl.videoHeight || 640;
-    ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-    targetInput.value = canvasEl.toDataURL("image/png");
-  }
+ function captureFrame(targetInput) {
+  const ctx = canvasEl.getContext("2d");
+
+  // 🔥 Reducir tamaño (CLAVE)
+  const width = 320;
+  const height = 240;
+
+  canvasEl.width = width;
+  canvasEl.height = height;
+
+  ctx.drawImage(videoEl, 0, 0, width, height);
+
+  // 🔥 Usar JPEG comprimido (CLAVE)
+  targetInput.value = canvasEl.toDataURL("image/jpeg", 0.5);
+}
 
   startBtn.addEventListener("click", async function () {
     try {
