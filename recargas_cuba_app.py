@@ -4135,8 +4135,8 @@ def privacy():
     """
 
 @app.route("/register/<int:step>", methods=["GET", "POST"])
-print("FACE CHECK pending_registration:", session.get("pending_registration"))
 def register_step(step):
+    print("FACE CHECK pending_registration:", session.get("pending_registration"))
     if current_user():
         return redirect(url_for("home"))
 
