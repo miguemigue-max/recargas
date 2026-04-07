@@ -18,30 +18,18 @@ def products_cuba():
 
     try:
         response = requests.get(url, headers=headers, timeout=30)
-        data = response.json()
-
-        sample = []
-        for item in data.get("Items", [])[:30]:
-            sample.append({
-                "sku": item.get("SkuCode"),
-                "provider": item.get("ProviderCode"),
-                "region": item.get("RegionCode"),
-                "text": item.get("DefaultDisplayText"),
-                "receive_value": item.get("ReceiveValue"),
-                "receive_currency": item.get("ReceiveCurrencyIso"),
-                "send_value": item.get("SendValue"),
-                "send_currency": item.get("SendCurrencyIso"),
-            })
 
         return jsonify({
             "ok": True,
-            "total_items": len(data.get("Items", [])),
-            "sample": sample
+            "status_code": response.status_code,
+            "api_key_loaded": bool(DING_API_KEY),
+            "api_key_prefix": (DING_API_KEY[:6] + "...") if DING_API_KEY else None,
+            "raw_text": response.text[:3000]
         })
 
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
-
+        
 @app.route("/send-topup", methods=["POST"])
 def send_topup():
     data = request.get_json() or {}
