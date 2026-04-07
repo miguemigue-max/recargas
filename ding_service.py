@@ -5,7 +5,7 @@ import requests
 
 app = Flask(__name__)
 
-DING_API_KEY = os.getenv("CToM1v1Zhms6X84hQzKurD")
+DING_API_KEY = ("CToM1v1Zhms6X84hQzKurD")
 
 @app.route("/")
 def home():
