@@ -4136,7 +4136,6 @@ def privacy():
 
 @app.route("/register/<int:step>", methods=["GET", "POST"])
 def register_step(step):
-    print("FACE CHECK pending_registration:", session.get("pending_registration"))
     if current_user():
         return redirect(url_for("home"))
 
@@ -4341,8 +4340,10 @@ def register_step(step):
                 "accepted_terms": True,
                 "accepted_terms_at": now_str(),
             }
-            print("STEP9 pending_registration guardado:", session.get("pending_registration"))
-            return redirect(url_for("home"))
+            print("STEP:", step, flush=True)
+            print("register_data:", session.get("register_data"), flush=True)
+            print("pending_registration:", session.get("pending_registration"), flush=True)
+            return redirect(url_for("register_face_check"))
 
     question = steps_info[step]["question"]
     helper = steps_info[step]["helper"]
@@ -4734,6 +4735,7 @@ def support_page():
 
 @app.route("/register/face-check", methods=["GET", "POST"])
 def register_face_check():
+    print("FACE CHECK pending_registration:", session.get("pending_registration"), flush=True)
     pending = session.get("pending_registration")
 
     if not pending:
