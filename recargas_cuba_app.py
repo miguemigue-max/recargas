@@ -3190,22 +3190,29 @@ def uploaded_file(filename):
 @app.route("/test-ding")
 def test_ding():
     url = "https://api.dingconnect.com/api/V1/GetProducts"
+
     headers = {
         "api_key": DING_API_KEY
     }
 
-    try:
-        response = requests.get(url, headers=headers, timeout=30)
-        return {
-            "ok": True,
-            "status_code": response.status_code,
-            "body": response.text[:3000]
-        }
-    except Exception as e:
-        return {
-            "ok": False,
-            "error": str(e)
-        }, 500
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    products = []
+
+    for item in data.get("Items", []):
+        if item.get("RegionCode") == "CU":  # SOLO CUBA
+            products.append({
+                "sku": item["SkuCode"],
+                "recibe": item["ReceiveValue"],
+                "moneda": item["ReceiveCurrencyIso"],
+                "pagas": item["SendValue"]
+            })
+
+    return {
+        "ok": True,
+        "productos_cuba": products[:10]  # solo 10 pa probar
+    }
 
 
 @app.route("/wallet")
