@@ -4752,8 +4752,8 @@ def register_face_check():
     pending = session.get("pending_registration")
 
     if not pending:
-    flash("Primero completa el registro.", "error")
-    return redirect(url_for("register_step", step=1))
+       flash("Primero completa el registro.", "error")
+       return redirect(url_for("register_step", step=1))
 
 # TEMPORAL: saltar verificación facial
 first_name = pending["first_name"]
