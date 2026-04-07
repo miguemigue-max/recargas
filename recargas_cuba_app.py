@@ -4015,6 +4015,26 @@ def delete_recharge(recharge_id):
     conn.close()
     return redirect(url_for("admin_recharges"))
 
+@app.route("/test-ding")
+def test_ding():
+    url = "https://api.dingconnect.com/api/V1/GetProducts"
+    headers = {
+        "api_key": DING_API_KEY
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        return {
+            "ok": True,
+            "status_code": response.status_code,
+            "body": response.text[:3000]
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e)
+        }, 500
+
 @app.route("/privacy")
 def privacy():
     return """
