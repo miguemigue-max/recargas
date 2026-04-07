@@ -13,34 +13,41 @@ def home():
 
 @app.route("/products/cuba")
 def products_cuba():
+    import requests
+
     url = "https://api.dingconnect.com/api/V1/GetProducts"
-    headers = {"api_key": DING_API_KEY}
+    headers = {
+        "api_key": DING_API_KEY
+    }
 
     try:
-        response = requests.get(url, headers=headers, timeout=30)
-        data = response.json()
+        res = requests.get(url, headers=headers, timeout=30)
+        data = res.json()
 
-        sample = []
-        for item in data.get("Items", [])[:30]:
-            sample.append({
-                "sku": item.get("SkuCode"),
-                "provider": item.get("ProviderCode"),
-                "region": item.get("RegionCode"),
-                "text": item.get("DefaultDisplayText"),
-                "receive_value": item.get("ReceiveValue"),
-                "receive_currency": item.get("ReceiveCurrencyIso"),
-                "send_value": item.get("SendValue"),
-                "send_currency": item.get("SendCurrencyIso"),
-            })
+        items = []
 
-        return jsonify({
+        for item in data.get("Items", []):
+            # 🔍 Filtramos por Cuba (mejor por provider o texto)
+            if "Cuba" in (item.get("DefaultDisplayText") or "") or item.get("RegionCode") == "CU":
+                items.append({
+                    "sku": item.get("SkuCode"),
+                    "name": item.get("DefaultDisplayText"),
+                    "price_usd": item.get("ReceiveValue"),
+                    "send_value": item.get("SendValue"),
+                    "send_currency": item.get("SendCurrencyIso")
+                })
+
+        return {
             "ok": True,
-            "total_items": len(data.get("Items", [])),
-            "sample": sample
-        })
+            "count": len(items),
+            "items": items
+        }
 
     except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+        return {
+            "ok": False,
+            "error": str(e)
+        }, 500
         
 @app.route("/send-topup", methods=["POST"])
 def send_topup():
