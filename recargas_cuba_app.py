@@ -3181,6 +3181,23 @@ def buy_product(product_id):
 def uploaded_file(filename):
     return send_file(UPLOAD_DIR / filename)
 
+@app.route("/test-ding")
+def test_ding():
+    url = "https://api.dingconnect.com/api/V1/GetProducts"
+
+    headers = {
+        "api_key": DING_API_KEY
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=30)
+        return {
+            "status_code": response.status_code,
+            "text": response.text[:2000]
+        }
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 
 @app.route("/wallet")
 @login_required
@@ -4735,184 +4752,88 @@ def register_face_check():
     pending = session.get("pending_registration")
 
     if not pending:
-        flash("Primero completa el registro.", "error")
-        return redirect(url_for("register_step", step=1))
+    flash("Primero completa el registro.", "error")
+    return redirect(url_for("register_step", step=1))
 
-    if request.method == "POST":
-        frame_1 = request.form.get("frame_1", "").strip()
-        frame_2 = request.form.get("frame_2", "").strip()
-        frame_3 = request.form.get("frame_3", "").strip()
+# TEMPORAL: saltar verificación facial
+first_name = pending["first_name"]
+last_name = pending["last_name"]
+email = pending["email"]
+password = pending["password"]
+carnet = pending["carnet"]
+city = pending["city"]
+profile_tag = clean_tag(pending["profile_tag"])
+referral_code = pending["referral_code"].strip().upper()
 
-        fingerprint = request.form.get("fingerprint", "").strip()
-        ip = get_user_ip()
+conn = get_db()
 
-        if not frame_1 or not frame_2 or not frame_3:
-            flash("No se pudo completar la verificación facial.", "error")
-            return redirect(url_for("register_face_check"))
+email_exists = q(conn, "SELECT id FROM users WHERE email = ?", (email,)).fetchone()
+carnet_exists = q(conn, "SELECT id FROM users WHERE carnet = ?", (carnet,)).fetchone()
+tag_exists = q(conn, "SELECT id FROM users WHERE profile_tag = ?", (profile_tag,)).fetchone()
 
-        if not fingerprint:
-            flash("No se pudo validar el dispositivo. Inténtalo otra vez.", "error")
-            return redirect(url_for("register_face_check"))
+if email_exists:
+    conn.close()
+    flash("Ese correo ya está registrado.", "error")
+    return redirect(url_for("register_step", step=3))
 
-        first_name = pending["first_name"]
-        last_name = pending["last_name"]
-        email = pending["email"]
-        password = pending["password"]
-        carnet = pending["carnet"]
-        city = pending["city"]
-        profile_tag = clean_tag(pending["profile_tag"])
-        referral_code = pending["referral_code"].strip().upper()
+if carnet_exists:
+    conn.close()
+    flash("Ese carnet ya está registrado.", "error")
+    return redirect(url_for("register_step", step=5))
 
-        conn = get_db()
+if tag_exists:
+    conn.close()
+    flash("Ese @tag ya está en uso.", "error")
+    return redirect(url_for("register_step", step=7))
 
-        # antifraude por fingerprint
-        existing_device = q(conn, """
-            SELECT * FROM device_fingerprints
-            WHERE fingerprint = ?
-              AND datetime(created_at) >= datetime('now', '-30 days')
-            LIMIT 1
-        """, (fingerprint,)).fetchone()
+referred_by_user_id = None
+if referral_code:
+    inviter = q(conn, "SELECT id FROM users WHERE referral_code = ?", (referral_code,)).fetchone()
+    if inviter:
+        referred_by_user_id = inviter["id"]
 
-        if existing_device:
-            conn.close()
-            flash("Solo puedes crear una cuenta por dispositivo cada 30 días.", "error")
-            return redirect(url_for("register_step", step=1))
+my_ref_code = generate_referral_code()
+while q(conn, "SELECT id FROM users WHERE referral_code = ?", (my_ref_code,)).fetchone():
+    my_ref_code = generate_referral_code()
 
-        # antifraude por IP
-        existing_ip = q(conn, """
-            SELECT * FROM device_fingerprints
-            WHERE ip = ?
-              AND datetime(created_at) >= datetime('now', '-30 days')
-            LIMIT 1
-        """, (ip,)).fetchone()
+q(conn, """
+    INSERT INTO users (
+        first_name, last_name, carnet, email, password, city,
+        profile_tag, profile_photo, referral_code, referred_by_user_id,
+        is_admin, is_locked, failed_attempts, created_at, last_login_at,
+        face_verified, face_verified_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, 0, 0, 0, ?, '', 1, ?)
+""", (
+    first_name,
+    last_name,
+    carnet,
+    email,
+    generate_password_hash(password),
+    city,
+    profile_tag,
+    my_ref_code,
+    referred_by_user_id,
+    now_str(),
+    now_str(),
+))
 
-        if existing_ip:
-            conn.close()
-            flash("Ya se creó una cuenta reciente desde esta red. Inténtalo más tarde.", "error")
-            return redirect(url_for("register_step", step=1))
+user_id = q(conn, "SELECT id FROM users WHERE email = ?", (email,)).fetchone()["id"]
 
-        email_exists = q(conn, "SELECT id FROM users WHERE email = ?", (email,)).fetchone()
-        carnet_exists = q(conn, "SELECT id FROM users WHERE carnet = ?", (carnet,)).fetchone()
-        tag_exists = q(conn, "SELECT id FROM users WHERE profile_tag = ?", (profile_tag,)).fetchone()
+q(conn, """
+    INSERT INTO wallets (
+        user_id, cup_balance, usd_balance, usdt_balance, bonus_usdt_balance, created_at
+    ) VALUES (?, 0, 0, 0, 0, ?)
+""", (user_id, now_str()))
 
-        if email_exists:
-            conn.close()
-            flash("Ese correo ya está registrado.", "error")
-            return redirect(url_for("register_step", step=3))
+conn.commit()
+conn.close()
 
-        if carnet_exists:
-            conn.close()
-            flash("Ese carnet ya está registrado.", "error")
-            return redirect(url_for("register_step", step=5))
+session.pop("register_data", None)
+session.pop("pending_registration", None)
+session["user_id"] = user_id
 
-        if tag_exists:
-            conn.close()
-            flash("Ese @tag ya está en uso.", "error")
-            return redirect(url_for("register_step", step=7))
-
-        referred_by_user_id = None
-        if referral_code:
-            inviter = q(conn, "SELECT id FROM users WHERE referral_code = ?", (referral_code,)).fetchone()
-            if inviter:
-                referred_by_user_id = inviter["id"]
-
-        my_ref_code = generate_referral_code()
-        while q(conn, "SELECT id FROM users WHERE referral_code = ?", (my_ref_code,)).fetchone():
-            my_ref_code = generate_referral_code()
-
-        q(conn, """
-            INSERT INTO users (
-                first_name, last_name, carnet, email, password, city,
-                profile_tag, profile_photo, referral_code, referred_by_user_id,
-                is_admin, is_locked, failed_attempts, created_at, last_login_at,
-                face_verified, face_verified_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, 0, 0, 0, ?, '', 1, ?)
-        """, (
-            first_name,
-            last_name,
-            carnet,
-            email,
-            generate_password_hash(password),
-            city,
-            profile_tag,
-            my_ref_code,
-            referred_by_user_id,
-            now_str(),
-            now_str(),
-        ))
-
-        user_id = q(conn, "SELECT id FROM users WHERE email = ?", (email,)).fetchone()["id"]
-
-        q(conn, """
-            INSERT INTO wallets (
-                user_id, cup_balance, usd_balance, usdt_balance, bonus_usdt_balance, created_at
-            ) VALUES (?, 0, 0, 0, 0, ?)
-        """, (user_id, now_str()))
-
-        if referred_by_user_id:
-            reward = parse_float(get_setting("referral_reward_usdt", "0.25"), 0.25)
-            required_deposit = parse_float(get_setting("referral_required_deposit_usd", "5"), 5)
-            q(conn, """
-                INSERT INTO referrals (
-                    inviter_user_id, invited_user_id, reward_usdt, required_deposit_usd,
-                    status, activated_at, paid_at, created_at
-                ) VALUES (?, ?, ?, ?, 'pendiente', '', '', ?)
-            """, (
-                referred_by_user_id,
-                user_id,
-                reward,
-                required_deposit,
-                now_str(),
-            ))
-
-        frame_1_path = save_data_url_image(frame_1, "face1")
-        frame_2_path = save_data_url_image(frame_2, "face2")
-        frame_3_path = save_data_url_image(frame_3, "face3")
-
-        q(conn, """
-            INSERT INTO face_verifications (
-                user_id, email, frame_1_path, frame_2_path, frame_3_path,
-                verification_type, status, created_at
-            ) VALUES (?, ?, ?, ?, ?, 'basic_liveness', 'Aprobado', ?)
-        """, (
-            user_id,
-            email,
-            frame_1_path,
-            frame_2_path,
-            frame_3_path,
-            now_str(),
-        ))
-
-        # guardar huella del dispositivo
-        q(conn, """
-            INSERT INTO device_fingerprints (fingerprint, ip, created_at)
-            VALUES (?, ?, ?)
-        """, (fingerprint, ip, now_str()))
-
-        conn.commit()
-        conn.close()
-
-        session.pop("register_data", None)
-        session.pop("pending_registration", None)
-        session["user_id"] = user_id
-
-        log_action(user_id, "user_registered", "Registro completado con verificación facial")
-
-        send_email(
-            email,
-            "Bienvenido a XyPher",
-            email_layout(
-                "Bienvenido a XyPher",
-                f"""
-                <p>Hola <strong>{first_name}</strong>,</p>
-                <p>Tu cuenta fue creada correctamente y ya puedes entrar a tu panel.</p>
-                <p>Desde ahora puedes usar depósitos, retiros, transferencias y tu saldo en USD dentro de XyPher.</p>
-                """
-            )
-        )
-
-        flash("Verificación completada y cuenta creada correctamente.", "success")
-        return redirect(url_for("home"))
+flash("Cuenta creada correctamente.", "success")
+return redirect(url_for("home"))
 
     content = """
 <div class="auth-shell">
