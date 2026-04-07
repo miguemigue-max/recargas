@@ -48,8 +48,6 @@ RECHARGE_UPLOAD_DIR = BASE_DIR / "static" / "recharges"
 RECHARGE_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 DING_API_KEY = "4rOYPYAWRm56MNODx50HQx"
 DISABLE_EMAIL = True
-if not DISABLE_EMAIL:
-    send_email(...)
 
 CITIES_CUBA = [
     "Pinar del Río", "Artemisa", "La Habana", "Mayabeque", "Matanzas",
@@ -152,6 +150,10 @@ def send_topup(phone, amount):
     return response.json()
 
 def send_email(to_email, subject, html_content):
+    if DISABLE_EMAIL:
+        print("EMAIL DESACTIVADO:", to_email, subject, flush=True)
+        return
+
     try:
         msg = MIMEMultipart("alternative")
         msg["From"] = SMTP_USER
@@ -161,14 +163,15 @@ def send_email(to_email, subject, html_content):
         part = MIMEText(html_content, "html")
         msg.attach(part)
 
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=20)
         server.starttls()
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(SMTP_USER, to_email, msg.as_string())
         server.quit()
 
     except Exception as e:
-        print("Error enviando email:", e)
+        print("Error enviando email:", e, flush=True)
+        return
 
 def create_mercadopago_pix_payment(amount_brl, description, payer_email):
     url = "https://api.mercadopago.com/v1/payments"
